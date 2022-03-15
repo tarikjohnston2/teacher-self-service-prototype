@@ -6,5 +6,9 @@
   ],
   "scripts": [
     "/javascripts/step-by-step-nav.js"
+  ],
+  "views": [
+    "/templates/step-by-step-navigation.html",
+    "/templates/start-with-step-by-step.html"
   ]
 }
