@@ -5,6 +5,7 @@ const path = require('path')
 const process = require('process')
 
 const _ = require('lodash')
+const AdmZip = require('adm-zip')
 
 const utils = require('./utils')
 const fse = require('fs-extra')
@@ -160,11 +161,9 @@ describe('update.sh', () => {
     fs.writeFileSync(path.join(dirToArchive, 'foo'), '')
     fs.writeFileSync(path.join(dirToArchive, 'VERSION.txt'), '9999.99.99')
 
-    if (process.platform === 'win32') {
-      child_process.execSync(`7z a ${archiveName} ${archivePrefix}`, { cwd: fixtureDir })
-    } else {
-      child_process.execSync(`zip -r ${archiveName} ${archivePrefix}`, { cwd: fixtureDir })
-    }
+    const zip = new AdmZip()
+    zip.addLocalFolder(path.join(fixtureDir, archivePrefix), archivePrefix)
+    zip.writeZip(archive)
   }
 
   function mktestArchiveSync (testDir) {
