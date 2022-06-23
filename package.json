@@ -72,6 +72,8 @@
     }
   },
   "jest": {
+    "globalSetup": "<rootDir>/jestGlobalSetup.js",
+    "globalTeardown": "<rootDir>/jestGlobalTeardown.js",
     "testPathIgnorePatterns": [
       "__tests__/spec/utils.js",
       "/node_modules/",
