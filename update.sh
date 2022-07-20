@@ -105,6 +105,12 @@ extract () {
 	cd ..
 }
 
+merge () {
+	if [ -f "update/lib/_update_package_json" ]; then
+		node "update/lib/_update_package_json"
+	fi
+}
+
 # Copy 'core files' from the update folder into the current prototype folder
 copy () {
 	OLD_VERSION="$(cat VERSION.txt)"
@@ -193,6 +199,7 @@ then
 	prepare
 	fetch
 	extract
+	merge
 	copy
 	post
 fi

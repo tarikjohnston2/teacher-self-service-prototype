@@ -1,0 +1,123 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const https = require('https')
+const os = require('os')
+const path = require('path')
+
+const prototypeToUpdate = process.cwd()
+const updateDir = path.resolve(prototypeToUpdate, 'update')
+
+async function main () {
+  const userPackageJsonPath = path.join(prototypeToUpdate, 'package.json')
+  const newPackageJsonPath = path.join(updateDir, 'package.json')
+  const originalPackageJsonPath = await fetchOldPackageJsonFile()
+  const mergedPackageJsonPath = path.join(updateDir, 'package.json.MERGED')
+
+  await mergePackageJsonFiles(
+    userPackageJsonPath,
+    originalPackageJsonPath,
+    newPackageJsonPath,
+    mergedPackageJsonPath
+  )
+
+  await fs.promises.copyFile(mergedPackageJsonPath, newPackageJsonPath)
+  await fs.promises.unlink(mergedPackageJsonPath)
+}
+
+async function fetchOldPackageJsonFile () {
+  const oldVersion = (await fs.promises.readFile(path.join(prototypeToUpdate, 'VERSION.txt'), 'utf8')).trim()
+  const remoteUrl = `https://raw.githubusercontent.com/alphagov/govuk-prototype-kit/v${oldVersion}/package.json`
+  const localPath = `/tmp/govuk-prototype-kit-${oldVersion}-package.json`
+
+  const file = fs.createWriteStream(localPath)
+  await new Promise((resolve, reject) => {
+    https.get(remoteUrl, (response) => {
+      let error
+
+      if (response.statusCode !== 200) {
+        error = new Error(`request failed: status code ${response.statusCode}`)
+        error.statusCode = response.statusCode
+        response.resume()
+        reject(error)
+      }
+
+      response.pipe(file)
+
+      file.on('finish', () => {
+        file.close()
+        resolve()
+      })
+    })
+  })
+
+  return localPath
+  }
+
+async function mergePackageJsonFiles (theirFile, originalFile, ourFile, outFile) {
+  const [theirs, original, ours] = await Promise.all(
+    [theirFile, originalFile, ourFile].map(
+      (f) => fs.promises.readFile(f, 'utf8').then((data) => JSON.parse(data))
+    )
+  )
+
+  const merged = mergePackageJson(theirs, original, ours)
+
+  const formattedJson = JSON.stringify(merged, null, 2).replace(/\n/g, os.EOL) + os.EOL
+  await fs.promises.writeFile(outFile, formattedJson, 'utf8')
+}
+
+function mergePackageJson (theirs, original, ours) {
+  return {
+    ...ours,
+    dependencies: mergeDeps(theirs.dependencies, original.dependencies, ours.dependencies)
+  }
+}
+
+/*
+ * Merge changes from original to ours into theirs
+ *
+ */
+function mergeDeps (theirs, original, ours) {
+  let merged = { ...theirs, ...ours }
+
+  // delete packages we have deleted
+  for (const pkg in original) {
+    if (pkg in ours === false) {
+      delete merged[pkg]
+    }
+  }
+
+  // npm sorts the dependencies, so we should too, but the way npm sorts the
+  // dependencies varies from version to version. We want the order of the
+  // merged dependencies to match the order of `ours` as much as possible, so
+  // we sort them twice, once alphabetically, and once to shuffle any items
+  // that are out-of-order compared to `ours`.
+  const ourPackageOrder = Object.fromEntries(
+    [...Object.keys(ours).entries()].map(([i, p]) => [p, i])
+  )
+  const mergedPackageNames = Object.keys(merged)
+    .sort()
+    .sort((a, b) => {
+      if (ourPackageOrder[a] && ourPackageOrder[b]) {
+        return ourPackageOrder[a] - ourPackageOrder[b]
+      } else {
+        return 0
+      }
+    })
+  merged = Object.fromEntries(
+    mergedPackageNames.map(name => [name, merged[name]])
+  )
+
+  return merged
+}
+
+module.exports = {
+  // export for tests
+  mergeDeps,
+  mergePackageJson
+}
+
+if (require.main === module) {
+  main()
+}

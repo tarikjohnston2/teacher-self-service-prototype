@@ -6,6 +6,7 @@ const process = require('process')
 const { promisify } = require('util')
 
 const _ = require('lodash')
+const diff = require('jest-diff')
 
 const utils = require('../util')
 const fse = require('fs-extra')
@@ -401,6 +402,93 @@ describe('update.sh', () => {
       expect(ret.trace).toEqual(expect.arrayContaining([
         expect.stringMatching('unzip .*/__fixtures__/govuk-prototype-kit-foo.zip')
       ]))
+    })
+  })
+
+  describe.only('merge', () => {
+    beforeAll(() => {
+      expect.extend({
+        async toDifferFrom (received, original, expectedDiff) {
+          const receivedString = (await fs.readFile(received, 'utf8'))
+          const originalString = (await fs.readFile(original, 'utf8'))
+          const actualDiff =
+            diff.diffLinesRaw(originalString.split('\n'), receivedString.split('\n'))
+              .filter(x => x[0] !== diff.DIFF_EQUAL)
+
+          const pass = this.equals(expectedDiff, actualDiff)
+
+          const message = pass
+            ? () => `expected file not to differ from ${original}`
+            : () =>
+              `expected file to differ from ${original} by:` +
+              '\n' +
+              // printDiffLines(expectedDiff, { aAnnotation: 'Original' }) +
+              this.utils.stringify(expectedDiff) +
+              '\n\n' +
+              'instead got:' +
+              '\n' +
+              this.utils.diff(originalString, receivedString, { aAnnotation: 'Original' })
+
+          return { message, pass }
+        }
+      })
+    })
+
+    it('runs lib/_update_package_json', async () => {
+      const testDir = await mktestPrototype('mergePackageJson')
+
+      const ret = await runScriptAndExpectSuccess('merge', { testDir, trace: true })
+
+      expect(ret.trace).toEqual(expect.arrayContaining([
+        '+ node update/lib/_update_package_json'
+      ]))
+    })
+
+    it('keeps packages a user has added to package.json', async () => {
+      const releaseDir = await mktestPrototype()
+      const testDir = await mktestPrototype('mergePackageJsonWhenUserHasAddedPackage', { ref: 'v12.1.1' })
+
+      await execPromise('npm install --save foobar@1.0.0', { cwd: testDir })
+
+      const ret = await runScriptAndExpectSuccess('merge', { testDir })
+
+      await expect(path.join(testDir, 'update', 'package.json')).toDifferFrom(
+        path.join(releaseDir, 'package.json'),
+        [
+          new diff.Diff(diff.DIFF_INSERT, '    "foobar": "^1.0.0",')
+        ]
+      )
+    })
+
+    it('works even if upgrading multiple versions at once', async () => {
+      const releaseDir = await mktestPrototype()
+      const testDir = await mktestPrototype('mergePackageJson2', { ref: 'v12.0.4' })
+
+      await execPromise('npm install --save foobar@1.0.0', { cwd: testDir })
+
+      const ret = await runScriptAndExpectSuccess('merge', { testDir })
+
+      expect(path.join(testDir, 'update', 'package.json')).toDifferFrom(
+        path.join(releaseDir, 'package.json'),
+        [
+          new diff.Diff(diff.DIFF_INSERT, '    "foobar": "^1.0.0",')
+        ]
+      )
+    })
+
+    it('removes packages we have removed even if the user has updated them', async () => {
+      const releaseDir = await mktestPrototype()
+      const testDir = await mktestPrototype('mergePackageJsonWithDeletion', { ref: 'v12.0.4' })
+
+      let packageJson = await fs.readFile(path.join(testDir, 'package.json'), 'utf8')
+      packageJson = packageJson.replace(/("gulp-sass"): "^5.0.0"/, '$1: "^5.1.0"')
+      await fs.writeFile(path.join(testDir, 'package.json'), packageJson, 'utf8')
+
+      const ret = await runScriptAndExpectSuccess('merge', { testDir })
+
+      // there should be no differences between our package.json and test
+      expect(path.join(testDir, 'update', 'package.json'))
+        .not.toDifferFrom(path.join(releaseDir, 'package.json'))
     })
   })
 
