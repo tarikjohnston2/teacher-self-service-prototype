@@ -81,7 +81,14 @@ function mergePackageJson (theirs, original, ours) {
 function mergeDeps (theirs, original, ours) {
   let merged = { ...theirs, ...ours }
 
-  // delete packages we have deleted
+  // If a user has downgraded a package, we respect that...
+  for (const pkg in original) {
+    if (pkg in theirs && theirs[pkg] !== original[pkg]) {
+      merged[pkg] = theirs[pkg]
+    }
+  }
+
+  // ...but we delete packages we have deleted
   for (const pkg in original) {
     if (pkg in ours === false) {
       delete merged[pkg]
