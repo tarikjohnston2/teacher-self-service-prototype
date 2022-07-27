@@ -1,11 +1,12 @@
 const child_process = require('child_process') // eslint-disable-line camelcase
-const execPromise = require('util').promisify(child_process.exec)
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
 const lockfile = require('proper-lockfile')
 const tar = require('tar')
+
+const { createReleaseArchiveSync } = require('../../internal_lib/create-release-archive')
 
 const repoDir = path.resolve(__dirname, '..', '..')
 
@@ -73,16 +74,14 @@ function getWorktreeCommit () {
 }
 
 function _mkReleaseArchiveOptions ({ archiveType = 'tar', dir } = {}) {
-  dir = dir || path.join(mkdtempSync(), '__fixtures__')
-  const commitRef = getWorktreeCommit()
+  const destDir = dir || path.join(mkdtempSync(), '__fixtures__')
+  const ref = getWorktreeCommit()
   const releaseName = process.env.KIT_JEST_RUN_ID
-    ? getJestId() : commitRef
+    ? getJestId() : ref
   const name = `govuk-prototype-kit-${releaseName}`
-  const archive = path.format({ dir, name, ext: '.' + archiveType })
+  const archive = path.format({ name, dir: destDir, ext: '.' + archiveType })
 
-  const script = `node scripts/create-release-archive --releaseName ${releaseName} --destDir ${dir} --archiveType ${archiveType} ${commitRef}`
-
-  return { archive, archiveType, commitRef, dir, releaseName, script }
+  return { archive, archiveType, destDir, releaseName, ref }
 }
 
 /**
@@ -100,13 +99,14 @@ function _mkReleaseArchiveOptions ({ archiveType = 'tar', dir } = {}) {
 async function mkReleaseArchive (options) {
   options = _mkReleaseArchiveOptions(options)
 
-  await fs.promises.mkdir(options.dir, { recursive: true })
+  await fs.promises.mkdir(options.destDir, { recursive: true })
 
   while (!fs.existsSync(options.archive)) {
     try {
       const releaseLock = await lockfile.lock(options.archive, { realpath: false, retries: 5 })
       if (!fs.existsSync(options.archive)) {
-        await execPromise(options.script, { cwd: repoDir })
+        // TODO: create an async version of this function
+        createReleaseArchiveSync(options)
       }
       await releaseLock()
     } catch (err) {
@@ -140,7 +140,7 @@ function mkReleaseArchiveSync (options) {
   try {
     fs.accessSync(options.archive)
   } catch (err) {
-    child_process.execSync(options.script, { cwd: options.repoDir })
+    createReleaseArchiveSync(options)
   }
 
   return options.archive
