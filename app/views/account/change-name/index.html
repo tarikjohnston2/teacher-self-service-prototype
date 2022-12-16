@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+{% set pageHeading = "Update your name" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+
+{% block beforeContent %}
+{% include "includes/banner.html" %}
+{% include "includes/back.html" %}
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">{{ pageHeading }} </h1>
+
+      <form method="post" novalidate>
+
+        {% call govukFieldset({
+          legend: {
+            text: title,
+            classes: "govuk-fieldset__legend--l",
+            isPageHeading: true
+          }
+        }) %}
+       
+        <p>If you’ve changed your name, you’ll need to provide evidence to update it. </p>
+
+        <p>Your evidence must be in pdf or jpeg format and be a scan of 1 of the following:</p>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>marriage certificate</li>
+            <li>civil partnership certificate</li>
+            <li>decree absolute and birth certificate</li>
+            <li>statutory declaration</li>
+            <li>deed poll</li>
+            
+          </ul>
+   
+        {{ govukInput({
+          label: {
+            text: "First name"
+          },          
+          hint: {
+            text: "Or given names"
+          },
+          classes: "govuk-!-width-two-thirds",
+          id: "first-name",
+          name: "first-name",
+          value: "Sarah"
+        }) }}
+        {{ govukInput({
+          label: {
+            text: "Last name"
+          },          
+          hint: {
+            text: "Or family name"
+          },
+          classes: "govuk-!-width-two-thirds",
+          id: "last-name",
+          name: "last name",
+          value: "Jones"
+        }) }}
+        {{ govukFileUpload({
+          id: "file-upload-1",
+          name: "file-upload-1",
+          label: {
+            text: "Upload your evidence"
+          }
+        }) }}
+        
+        {% endcall %}
+
+        {{ govukButton({
+          text: "Update name",
+          href: "confirmation"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

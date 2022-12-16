@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% set pageHeading = "Update your date of birth" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+{% block beforeContent %}
+{% include "includes/back.html" %}
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">{{ pageHeading }} </h1>
+
+      <form method="post" novalidate>
+
+        {% call govukFieldset({
+          legend: {
+            classes: "govuk-fieldset__legend--l",
+            isPageHeading: false
+          }
+        }) %}
+  
+        {{ govukInput({
+          label: {
+            text: "Email address"
+          },
+          id: "email",
+          name: "email",
+          type: "email",
+          autocomplete: "email",
+   
+          spellcheck: false
+        }) }}
+
+        
+        
+         
+        {% endcall %}
+
+        {{ govukButton({
+          text: "Update email address",
+          href: "confirmation"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

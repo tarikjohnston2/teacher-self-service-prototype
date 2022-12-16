@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% set pageHeading = "Update your telephone number" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+{% block beforeContent %}
+{% include "includes/back.html" %}
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">{{ pageHeading }} </h1>
+
+      <form method="post" novalidate>
+
+        {% call govukFieldset({
+          legend: {
+            text: title,
+            classes: "govuk-fieldset__legend--l",
+            isPageHeading: true
+          }
+        }) %}
+        <p>We've hidden part of your phone number to protect your data.</p>
+  
+        {{ govukInput({
+       
+          hint: {
+            text: "For international numbers include the country code"
+          },
+          id: "telephone-number",
+          name: "telephone-number",
+          type: "tel",
+          autocomplete: "tel",
+          classes: "govuk-input--width-20",
+          value: "07******47"
+        }) }}
+
+        
+        
+         
+        {% endcall %}
+
+        {{ govukButton({
+          text: "Update telephone number",
+          href: "confirmation"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

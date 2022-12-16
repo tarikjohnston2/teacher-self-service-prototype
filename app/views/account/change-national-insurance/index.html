@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% set pageHeading = "Update your National Insurance number" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+{% block beforeContent %}
+{% include "includes/back.html" %}
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">{{ pageHeading }} </h1>
+
+      <form method="post" novalidate>
+
+        {% call govukFieldset({
+          legend: {
+            text: title,
+            classes: "govuk-fieldset__legend--l",
+            isPageHeading: true
+          }
+        }) %}
+        <p>We've hidden part of your National Insurance number to protect your data.</p>
+  
+        {{ govukInput({
+          classes: "govuk-input--width-10",
+          id: "national-insurance",
+          name: "national-insurance",
+          value: "JL*****B"
+        }) }} 
+
+        
+        
+         
+        {% endcall %}
+
+        {{ govukButton({
+          text: "Update National Insurance number",
+          href: "confirmation"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

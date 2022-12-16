@@ -1,42 +1,38 @@
 
 {% extends "layout.html" %}
 
-{% block pageTitle %}
-  Home – GOV.UK Prototype Kit
-{% endblock %}
+{% block pageTitle %} {{ serviceName }}{% endblock %}
+
 
 {% block content %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-xl">
-        Prototype your service using GOV.UK Prototype Kit
-        <span class="govuk-caption-xl">{{releaseVersion}}</span>
-      </h1>{{releaseVersion | log }}
-      <p>
-        This kit lets you rapidly create HTML prototypes of GOV.UK services.
-      </p>
-
-      <p>
-        It contains all you need to prototype anything from simple static pages to complex, data-driven transactions.
-      </p>
-
-      <h2 class="govuk-heading-m">About this page</h2>
-
-      <p>We recommend you add links to your prototype to this page, rather than delete it.
-        You'll find this page in the kit at '/app/views/index.html'.</p>
-
-      <p>You can change the service name by editing the file '/app/config.js'.</p>
-
-      <h2 class="govuk-heading-m">Examples and documentation</h2>
+      <h1 class="govuk-heading-l">
+        {{ serviceName }}
+      </h1>     
+      <p class="govuk-heading-s">The screens and journeys for the  {{ serviceName }} experience</p>
 
       <ul class="govuk-list govuk-list--bullet">
-        <li>
-          <a href="https://govuk-prototype-kit.herokuapp.com/docs/tutorials-and-examples">Tutorials and templates</a>
-        </li>
-        <li>
-          <a href="https://design-system.service.gov.uk">GOV.UK Design System</a>
-        </li>
+        <li>Dashboard</li>
+        <li><a href="account/change-name/index.html">Change name</a></li>
+        <li><a href="account/change-dob/index">Change date of birth</a></li>
+        <li><a href="account/change-telephone/index">Change phone number</a></li>
+        <li><a href="account/change-email/index">Change email address</a></li>
+        <li><a href="account/change-national-insurance/index">Change National Insurance number</a></li>
+      </ul>
+      <p class="govuk-heading-s">Emails sent from service</p>
+      <p>Changes to email address, phone & NI do not require DfE contact centre checks. After updating the user will receive the following email  </p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li><a href="email/email-auto-confirmation.html">Auto confirmation (Email, Phone, NI)</a></li>
+      </ul>
+      <p>Changes to Name or D.O.B require DfE approval. The user will recieve a confimation email, followed by an email accepting or rejecting their change request.  </p>
+
+      <ul class="govuk-list govuk-list--bullet">
+
+        <li><a href="email/email-auto-confirmation-awaiting.html">Auto confirmation (Name, D.O.B)</a></li>
+        <li><a href="email/email-auto-confirmation-rejected.html">Email changes rejection (Name. D.O.B)</a></li>
+        <li><a href="email/email-auto-confirmation-accepted.html">Email changes accepted (Name. D.O.B)</a></li>
       </ul>
     </div>
   </div>

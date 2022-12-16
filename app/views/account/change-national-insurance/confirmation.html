@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% set pageHeading = "National Insurance number updated" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+{% block content %}
+{% set html %}
+  <p class="app-!-inherit-colour govuk-!-margin-bottom-0">
+    <a class="app-hidden-link govuk-!-font-size-24 govuk-link--inverse" href="../email/email-auto-confirmation">We've sent sent you a confirmation email.</a>
+  </p>
+{% endset %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ govukPanel({
+        titleHtml: pageHeading,
+        html: html
+      }) }}
+
+
+      {{ govukButton({
+        text: "Back to your personal details",
+        href: "../../"
+      }) }}
+
+
+
+    </div>
+  </div>
+
+{% endblock %}

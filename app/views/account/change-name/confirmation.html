@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% set pageHeading = "We've recieved your request" %} 
+
+{% block pageTitle %}
+{{ pageHeading }} 
+{% endblock %}
+
+{% block beforeContent %}
+{% include "includes/banner.html" %}
+{% endblock %}
+
+
+{% block content %}
+{% set html %}
+  <p class="app-!-inherit-colour govuk-!-margin-bottom-0">
+    <a class="app-hidden-link govuk-!-font-size-24 govuk-link--inverse" href="../email/email-auto-confirmation">We've sent sent you a confirmation email.</a>
+  </p>
+{% endset %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ govukPanel({
+        titleHtml: pageHeading,
+        html: html
+      }) }}
+
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      <p>We will review your request and get back to you in 5 working days.</p>
+      <p> We will contact you either to confirm this change, or to notify you if your request isn't sucessful.</p>
+
+      {{ govukButton({
+        text: "Back to your personal details",
+        href: "../../"
+      }) }}
+
+
+
+    </div>
+  </div>
+
+{% endblock %}
